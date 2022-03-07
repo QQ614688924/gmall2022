@@ -3,6 +3,7 @@ package com.atguigu.gmall.realtime.utils;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
+import org.apache.flink.streaming.connectors.kafka.KafkaSerializationSchema;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 
 import java.util.Properties;
@@ -16,6 +17,14 @@ public class MyKafkaUtil {
 
     static {
         properties.setProperty("bootstrap.servers",KAFKA_SERVER);
+    }
+
+    public static <T> FlinkKafkaProducer<T> getKafkaProducer(KafkaSerializationSchema<T> serializationSchema){
+        String defaultTopic = "dwd_base_db";
+        Properties properties = new Properties();
+
+
+        return  new FlinkKafkaProducer<T>(defaultTopic,serializationSchema,properties,FlinkKafkaProducer.Semantic.NONE);
     }
 
     public static FlinkKafkaProducer<String> getKafkaSink(String topic){

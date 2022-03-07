@@ -8,9 +8,12 @@
     <artifactId>gmall2022</artifactId>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
+
     <modules>
+        <module>gmall2022-logger</module>
         <module>gmall2022-realtime</module>
     </modules>
+
 
 
 </project>

@@ -33,9 +33,9 @@ public class BaseDbApp {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
         //TODO  2.设置状态后端
-        env.setStateBackend(new FsStateBackend("hdfs://hadoop102:8020/gmall_flink/dwd_db/ck"));
-        env.enableCheckpointing(10000L,CheckpointingMode.EXACTLY_ONCE);
-        env.getCheckpointConfig().setCheckpointTimeout(60000L);
+//        env.setStateBackend(new FsStateBackend("hdfs://hadoop102:8020/gmall_flink/dwd_db/ck"));
+//        env.enableCheckpointing(10000L,CheckpointingMode.EXACTLY_ONCE);
+//        env.getCheckpointConfig().setCheckpointTimeout(60000L);
 
         String topic = "ods_base_db";
         String group_id = "base_db_app_gmall2022";

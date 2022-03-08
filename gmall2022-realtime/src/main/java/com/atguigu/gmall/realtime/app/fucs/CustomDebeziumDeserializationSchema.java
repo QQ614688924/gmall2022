@@ -3,6 +3,7 @@ package com.atguigu.gmall.realtime.app.fucs;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.ververica.cdc.debezium.DebeziumDeserializationSchema;
 import io.debezium.data.Envelope;
+import org.apache.flink.api.common.typeinfo.BasicTypeInfo;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.util.Collector;
 
@@ -13,7 +14,7 @@ import org.apache.kafka.connect.source.SourceRecord;
 
 public class CustomDebeziumDeserializationSchema implements DebeziumDeserializationSchema<String> {
     @Override
-    public void deserialize(SourceRecord sourceRecord, Collector collector) throws Exception {
+    public void deserialize(SourceRecord sourceRecord, Collector<String> collector) throws Exception {
 
         //获取主题  解析数据库和表名
         String topic = sourceRecord.topic();
@@ -54,14 +55,15 @@ public class CustomDebeziumDeserializationSchema implements DebeziumDeserializat
         res.put("table",tableName);
         res.put("before",before_data);
         res.put("after",after_data);
-        res.put("operation",operation);
+        res.put("operation",operation.toString().toLowerCase());
+        System.out.println(res.toJSONString());
 
-        collector.collect(res);
+        collector.collect(res.toJSONString());
 
     }
 
     @Override
-    public TypeInformation getProducedType() {
-        return null;
+    public TypeInformation<String> getProducedType() {
+        return BasicTypeInfo.STRING_TYPE_INFO;
     }
 }

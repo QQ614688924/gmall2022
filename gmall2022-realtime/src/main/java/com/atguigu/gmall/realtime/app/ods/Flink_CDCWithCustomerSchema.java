@@ -21,6 +21,7 @@ public class Flink_CDCWithCustomerSchema {
                 .port(3306)
                 .username("root")
                 .password("000000")
+                .databaseList("gmall")
                 .startupOptions(StartupOptions.latest())
                 .deserializer(new CustomDebeziumDeserializationSchema()).build();
 

@@ -61,6 +61,7 @@ public class TableProcessFunction extends BroadcastProcessFunction<JSONObject, S
         //获取广播流对象
         BroadcastState<String, TableProcess> broadcastState = context.getBroadcastState(mapStateDescriptor);
         String key = tableProcess.getSourceTable() + ":" + tableProcess.getOperateType();
+        System.out.println("写入key为："+key);
         broadcastState.put(key,tableProcess);
 
     }
@@ -85,7 +86,7 @@ public class TableProcessFunction extends BroadcastProcessFunction<JSONObject, S
                 if (sinkPk.equals(column)) {
                     createTableSql
                             .append(column)
-                            .append(" varchar primary_key ");
+                            .append(" varchar primary key ");
                 }else{
                     createTableSql
                             .append(column)
@@ -97,13 +98,15 @@ public class TableProcessFunction extends BroadcastProcessFunction<JSONObject, S
                 }
 
             }
+            createTableSql.append(")");
+            createTableSql.append(sinkExtend);
             System.out.println("建表语句" + createTableSql);
             preparedStatement = connection.prepareStatement(createTableSql.toString());
 
             preparedStatement.execute();
 
         } catch (SQLException e) {
-            new RuntimeException("创建表"+ sinkTable +"，创建失败！");
+            throw new RuntimeException("创建表"+ sinkTable +"，创建失败！");
         }finally {
             if (preparedStatement !=null) {
                 try {
@@ -118,15 +121,15 @@ public class TableProcessFunction extends BroadcastProcessFunction<JSONObject, S
     }
 
 
-    //value:{"db":"","tn":"","before":{},"after":{},"type":""}
+    //value:{"db":"","tn":"","before":{},"after":{},"operation":""}
     @Override
     public void processElement(JSONObject jsonObject, ReadOnlyContext readOnlyContext, Collector<JSONObject> collector) throws Exception {
 
         // 1.读取状态
         ReadOnlyBroadcastState<String, TableProcess> broadcastState = readOnlyContext.getBroadcastState(mapStateDescriptor);
 
-        String key = jsonObject.getString("tableName") + ":" + jsonObject.getString("type");
-
+        String key = jsonObject.getString("table") + ":" + jsonObject.getString("operation");
+        System.out.println("读取key："+key);
         TableProcess tableProcess = broadcastState.get(key);
 
         if (tableProcess != null) {
@@ -149,7 +152,7 @@ public class TableProcessFunction extends BroadcastProcessFunction<JSONObject, S
             //HBase数据,写入侧输出流
 
         }else{
-            System.out.println("该组合key：" + tableProcess.getSinkPk() + "不存在！");
+            System.out.println("该组合key不存在！");
         }
 
 

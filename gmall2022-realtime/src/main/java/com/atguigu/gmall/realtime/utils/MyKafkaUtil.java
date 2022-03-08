@@ -21,7 +21,6 @@ public class MyKafkaUtil {
 
     public static <T> FlinkKafkaProducer<T> getKafkaProducer(KafkaSerializationSchema<T> serializationSchema){
         String defaultTopic = "dwd_base_db";
-        Properties properties = new Properties();
 
 
         return  new FlinkKafkaProducer<T>(defaultTopic,serializationSchema,properties,FlinkKafkaProducer.Semantic.NONE);

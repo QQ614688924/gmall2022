@@ -2,6 +2,7 @@ package com.atguigu.gmall.realtime.app.fucs;
 
 import com.alibaba.fastjson.JSONObject;
 import com.atguigu.gmall.realtime.commons.GmallConfig;
+import com.atguigu.gmall.realtime.utils.DimUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
@@ -37,7 +38,17 @@ public class DimSinkFunction extends RichSinkFunction<JSONObject> {
 
         String upsertSql = getUpsertSql(sinkTable, data);
 
-        System.out.println(upsertSql);
+        String type = value.getString("operation");
+        String id = data.getString("id");
+
+        if ("update".equals(type)){
+            String key = "DIM:" + sinkTable.toUpperCase() + ":" + id;
+            System.out.println("删除redis的key" + key);
+            DimUtil.delRedisDimInfo(sinkTable.toUpperCase(),id);
+        }
+
+
+        System.out.println("更新语句："+upsertSql);
 
         try {
             preparedStatement = connection.prepareStatement(upsertSql);

@@ -1,6 +1,7 @@
 package com.atguigu.gmall.realtime.app.dwm;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONAware;
 import com.alibaba.fastjson.JSONObject;
 import com.atguigu.gmall.realtime.utils.MyKafkaUtil;
 import org.apache.flink.api.common.eventtime.*;
@@ -48,19 +49,30 @@ public class UserJumpDetailApp {
                         }));
 
         // 4. 定义序列模式
+//        Pattern<JSONObject, JSONObject> pattern = Pattern.<JSONObject>begin("start").where(new IterativeCondition<JSONObject>() {
+//            @Override
+//            public boolean filter(JSONObject jsonObject, Context<JSONObject> context) throws Exception {
+//                String lastPageId = jsonObject.getJSONObject("page").getString("last_page_id");
+//                return lastPageId == null || lastPageId.length() <= 0;
+//            }
+//        }).next("next").where(new IterativeCondition<JSONObject>() {
+//            @Override
+//            public boolean filter(JSONObject jsonObject, Context<JSONObject> context) throws Exception {
+//                String lastPageId = jsonObject.getJSONObject("page").getString("last_page_id");
+//                return lastPageId == null || lastPageId.length() <= 0;
+//            }
+//        }).within(Time.seconds(10));
+        //cep循环模式
         Pattern<JSONObject, JSONObject> pattern = Pattern.<JSONObject>begin("start").where(new IterativeCondition<JSONObject>() {
             @Override
             public boolean filter(JSONObject jsonObject, Context<JSONObject> context) throws Exception {
                 String lastPageId = jsonObject.getJSONObject("page").getString("last_page_id");
                 return lastPageId == null || lastPageId.length() <= 0;
             }
-        }).next("next").where(new IterativeCondition<JSONObject>() {
-            @Override
-            public boolean filter(JSONObject jsonObject, Context<JSONObject> context) throws Exception {
-                String lastPageId = jsonObject.getJSONObject("page").getString("last_page_id");
-                return lastPageId == null || lastPageId.length() <= 0;
-            }
-        }).within(Time.seconds(10));
+        }).times(2)
+                .consecutive()//严格近邻
+                .within(Time.seconds(10));
+
 
         // 5. 将序列模式定义到流上
         // 5.1 分组  按照用户来算跳出率
@@ -88,8 +100,9 @@ public class UserJumpDetailApp {
         DataStream<JSONObject> unionDS = patternDS.union(timeOutDS);
 
         // 8. 输出到kafka
-        unionDS.print();
-        unionDS.map(line -> line.toJSONString()).addSink(MyKafkaUtil.getKafkaSink(sinkTopic));
+        timeOutDS.print("tm>>>>>>>>>>>");
+        patternDS.print("pd>>>>>>>>>>>>");
+        unionDS.map(JSONAware::toJSONString).addSink(MyKafkaUtil.getKafkaSink(sinkTopic));
 
         // 9. 执行程序
 

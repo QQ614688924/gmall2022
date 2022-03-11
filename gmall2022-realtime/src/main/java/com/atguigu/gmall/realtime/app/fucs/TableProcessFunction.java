@@ -4,28 +4,26 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.atguigu.gmall.realtime.bean.TableProcess;
 import com.atguigu.gmall.realtime.commons.GmallConfig;
-import org.apache.flink.api.common.state.BroadcastState;
-import org.apache.flink.api.common.state.MapStateDescriptor;
-import org.apache.flink.api.common.state.ReadOnlyBroadcastState;
+import org.apache.flink.api.common.functions.BroadcastVariableInitializer;
+import org.apache.flink.api.common.state.*;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.co.BroadcastProcessFunction;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.OutputTag;
 
+import javax.xml.bind.ValidationEvent;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class TableProcessFunction extends BroadcastProcessFunction<JSONObject, String, JSONObject> {
 
     private Connection connection;
     private OutputTag<JSONObject> outputTag;
     private MapStateDescriptor<String,TableProcess> mapStateDescriptor;
+    private ValueState<TableProcess> tableState;
 
     public TableProcessFunction(OutputTag<JSONObject> outputTag, MapStateDescriptor<String, TableProcess> mapStateDescriptor) {
         this.outputTag = outputTag;
@@ -36,6 +34,7 @@ public class TableProcessFunction extends BroadcastProcessFunction<JSONObject, S
     public void open(Configuration parameters) throws Exception {
         Class.forName(GmallConfig.PHOENIX_DRIVER);
         connection = DriverManager.getConnection(GmallConfig.PHOENIX_SERVER);
+
 //        connection.setAutoCommit(true);
     }
 
@@ -45,6 +44,8 @@ public class TableProcessFunction extends BroadcastProcessFunction<JSONObject, S
         // 1.获取并解析数据
         JSONObject jsonObject = JSON.parseObject(value);
         String data = jsonObject.getString("after");
+
+
         //转换对象
         TableProcess tableProcess = JSON.parseObject(data, TableProcess.class);
 
@@ -61,7 +62,7 @@ public class TableProcessFunction extends BroadcastProcessFunction<JSONObject, S
         //获取广播流对象
         BroadcastState<String, TableProcess> broadcastState = context.getBroadcastState(mapStateDescriptor);
         String key = tableProcess.getSourceTable() + ":" + tableProcess.getOperateType();
-        System.out.println("写入key为："+key);
+//        System.out.println("写入key为："+key);
         broadcastState.put(key,tableProcess);
 
     }
@@ -165,6 +166,8 @@ public class TableProcessFunction extends BroadcastProcessFunction<JSONObject, S
      * @param data   {"id":"11","tm_name":"atguigu","logo_url":"aaa"}
      * @param sinkColumns  {"id":"11","tm_name":"atguigu"}
      */
+
+    // bug地方
     private void filterColumns(JSONObject data, String sinkColumns) {
 
         String[] fileds = sinkColumns.split(",");

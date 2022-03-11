@@ -21,14 +21,18 @@ public class Flink_CDCWithCustomerSchema {
                 .port(3306)
                 .username("root")
                 .password("000000")
-                .databaseList("gmall")
+                .databaseList("gmall_flink")
                 .startupOptions(StartupOptions.latest())
                 .deserializer(new CustomDebeziumDeserializationSchema()).build();
 
 //        4.使用CDCsource从Mysql读取数据
         DataStreamSource<String> mysqlDS = env.addSource(mysqlSource);
 
-        mysqlDS.addSink(MyKafkaUtil.getKafkaSink("ods_base_db"));
+        mysqlDS.print();
+
+        mysqlDS.addSink(MyKafkaUtil.getKafkaSink("ods_base_db_0310"));
+
+
 
         env.execute();
 

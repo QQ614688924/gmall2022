@@ -37,18 +37,18 @@ public class BaseDbApp {
 //        env.enableCheckpointing(10000L,CheckpointingMode.EXACTLY_ONCE);
 //        env.getCheckpointConfig().setCheckpointTimeout(60000L);
 
-        String topic = "ods_base_db";
-        String group_id = "base_db_app_gmall2022";
+        String topic = "ods_base_db_0310";
+        String group_id = "base_db_app_0310";
         //TODO  3.读取Kafka数据
         DataStreamSource<String> kafkaSourceDS = env.addSource(MyKafkaUtil.getKafkaSource(topic, group_id));
 
         //TODO  4.将每行数据转成json对象 5.过滤数据
-        SingleOutputStreamOperator<JSONObject> filterDS = kafkaSourceDS.map(line -> JSON.parseObject(line)).filter(new FilterFunction<JSONObject>() {
+        SingleOutputStreamOperator<JSONObject> filterDS = kafkaSourceDS.map(JSON::parseObject).filter(new FilterFunction<JSONObject>() {
             @Override
             public boolean filter(JSONObject jsonObject) throws Exception {
 
-                String data = jsonObject.getString("data");
-                return !(data != null && data.length() > 0);
+                String operation = jsonObject.getString("operation");
+                return !"delete".equals(operation);
             }
         });
 
@@ -59,6 +59,7 @@ public class BaseDbApp {
                 .username("root")
                 .password("000000")
                 .databaseList("gmall_flink_realtime")
+                .tableList("gmall_flink_realtime.table_process")
                 .deserializer(new CustomDebeziumDeserializationSchema())
                 .startupOptions(StartupOptions.initial())
                 .build();

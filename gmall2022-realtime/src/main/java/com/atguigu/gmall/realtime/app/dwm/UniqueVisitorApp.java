@@ -30,7 +30,7 @@ public class UniqueVisitorApp {
 
         // 2.消费kafka数据
         String topic = "dwd_page_log";
-        String groupId = "dwd_page_log_uv_app";
+        String groupId = "dwd_page_log_uv_app_0314";
         String sinkTopic = "dwm_uv_visit";
         DataStreamSource<String> kafkaDS = env.addSource(MyKafkaUtil.getKafkaSource(topic, groupId));
 

@@ -38,7 +38,7 @@ public class BaseDbApp {
 //        env.getCheckpointConfig().setCheckpointTimeout(60000L);
 
         String topic = "ods_base_db_0310";
-        String group_id = "base_db_app_0310";
+        String group_id = "base_db_app_031611";
         //TODO  3.读取Kafka数据
         DataStreamSource<String> kafkaSourceDS = env.addSource(MyKafkaUtil.getKafkaSource(topic, group_id));
 

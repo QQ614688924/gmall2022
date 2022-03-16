@@ -1,7 +1,7 @@
 package com.atguigu.gmall.realtime.utils;
 
 import com.alibaba.fastjson.JSONObject;
-import com.atguigu.gmall.realtime.commons.GmallConfig;
+import com.atguigu.gmall.realtime.common.GmallConfig;
 import com.google.common.base.CaseFormat;
 import org.apache.commons.beanutils.BeanUtils;
 

@@ -1,12 +1,10 @@
 package com.atguigu.gmall.realtime.app.fucs;
 
 import com.alibaba.fastjson.JSONObject;
-import com.atguigu.gmall.realtime.commons.GmallConfig;
+import com.atguigu.gmall.realtime.common.GmallConfig;
 import com.atguigu.gmall.realtime.utils.DimUtil;
-import com.atguigu.gmall.realtime.utils.PhoenixUtil;
 import com.atguigu.gmall.realtime.utils.ThreadPoolUtil;
 import org.apache.flink.configuration.Configuration;
-import org.apache.flink.streaming.api.datastream.AsyncDataStream;
 import org.apache.flink.streaming.api.functions.async.ResultFuture;
 import org.apache.flink.streaming.api.functions.async.RichAsyncFunction;
 

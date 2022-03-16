@@ -1,7 +1,7 @@
 package com.atguigu.gmall.realtime.app.fucs;
 
 import com.alibaba.fastjson.JSONObject;
-import com.atguigu.gmall.realtime.commons.GmallConfig;
+import com.atguigu.gmall.realtime.common.GmallConfig;
 import com.atguigu.gmall.realtime.utils.DimUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.flink.configuration.Configuration;

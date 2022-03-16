@@ -1,5 +1,6 @@
 package com.atguigu.gmall.realtime.bean;
 
+import com.alibaba.fastjson.JSONObject;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.apache.commons.lang3.ObjectUtils;
@@ -9,7 +10,7 @@ import java.math.BigDecimal;
 // 怎么定义宽表类   订单表+订单明细 （去重后的字段） + 维度表（补充的字段）
 @Data
 @AllArgsConstructor
-public class OrderWide {
+public class OrderWide{
     Long detail_id;
     Long order_id;
     Long sku_id;
@@ -55,6 +56,8 @@ public class OrderWide {
         mergeOrderInfo(orderInfo);
         mergeOrderDetail(orderDetail);
     }
+
+
 
     public void mergeOrderInfo(OrderInfo orderInfo) {
         if (orderInfo != null) {

@@ -2,7 +2,7 @@ package com.atguigu.gmall.realtime.utils;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.atguigu.gmall.realtime.commons.GmallConfig;
+import com.atguigu.gmall.realtime.common.GmallConfig;
 import redis.clients.jedis.Jedis;
 
 import java.sql.Connection;

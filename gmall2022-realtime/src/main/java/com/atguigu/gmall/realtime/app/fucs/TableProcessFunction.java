@@ -3,15 +3,13 @@ package com.atguigu.gmall.realtime.app.fucs;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.atguigu.gmall.realtime.bean.TableProcess;
-import com.atguigu.gmall.realtime.commons.GmallConfig;
-import org.apache.flink.api.common.functions.BroadcastVariableInitializer;
+import com.atguigu.gmall.realtime.common.GmallConfig;
 import org.apache.flink.api.common.state.*;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.co.BroadcastProcessFunction;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.OutputTag;
 
-import javax.xml.bind.ValidationEvent;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;

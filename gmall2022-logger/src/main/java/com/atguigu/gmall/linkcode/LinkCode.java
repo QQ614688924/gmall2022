@@ -1,6 +1,4 @@
-package com.atguigu.gmall.realtime.linkcode;
-
-import java.util.*;
+package com.atguigu.gmall.linkcode;
 
 public class LinkCode {
 

@@ -11,6 +11,7 @@ import com.google.inject.internal.cglib.core.$DuplicatesPredicate;
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.streaming.api.datastream.AsyncDataStream;
+import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.async.AsyncFunction;
@@ -19,10 +20,8 @@ import org.apache.flink.streaming.api.functions.co.ProcessJoinFunction;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.util.Collector;
 
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 
@@ -38,66 +37,59 @@ public class OrderWideApp {
         String orderInfoSourceTopic = "dwd_order_info";
         String orderDetailSourceTopic = "dwd_order_detail";
         String orderWideSinkTopic = "dwm_order_wide";
-        String groupId = "order_wide_group_03111108";
+        String groupId = "order_wide_group_031612";
 
         SingleOutputStreamOperator<OrderInfo> orderInfoDS = env.addSource(MyKafkaUtil.getKafkaSource(orderInfoSourceTopic, groupId))
-                .map(line ->
-                {
-                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                .map(line -> {
                     OrderInfo orderInfo = JSON.parseObject(line, OrderInfo.class);
+
                     String create_time = orderInfo.getCreate_time();
-                    String[] split = create_time.split(" ");
-                    orderInfo.setCreate_date(split[0]);
-                    orderInfo.setCreate_hour(split[1].split(":")[0]);
+                    String[] dateTimeArr = create_time.split(" ");
+                    orderInfo.setCreate_date(dateTimeArr[0]);
+                    orderInfo.setCreate_hour(dateTimeArr[1].split(":")[0]);
 
-                    long ts = sdf.parse(create_time).getTime();
-                    orderInfo.setCreate_ts(ts);
-
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    orderInfo.setCreate_ts(sdf.parse(create_time).getTime());
 
                     return orderInfo;
-
-                })
-                .assignTimestampsAndWatermarks(WatermarkStrategy.<OrderInfo>forMonotonousTimestamps()
+                }).assignTimestampsAndWatermarks(WatermarkStrategy.<OrderInfo>forMonotonousTimestamps()
                         .withTimestampAssigner(new SerializableTimestampAssigner<OrderInfo>() {
                             @Override
-                            public long extractTimestamp(OrderInfo orderInfo, long l) {
-                                return orderInfo.getCreate_ts();
+                            public long extractTimestamp(OrderInfo element, long recordTimestamp) {
+                                return element.getCreate_ts();
                             }
                         }));
-
         SingleOutputStreamOperator<OrderDetail> orderDetailDS = env.addSource(MyKafkaUtil.getKafkaSource(orderDetailSourceTopic, groupId))
-                .map(line ->
-                {
-                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                .map(line -> {
                     OrderDetail orderDetail = JSON.parseObject(line, OrderDetail.class);
                     String create_time = orderDetail.getCreate_time();
+
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                     orderDetail.setCreate_ts(sdf.parse(create_time).getTime());
 
                     return orderDetail;
-                })
-                .assignTimestampsAndWatermarks(WatermarkStrategy.<OrderDetail>forMonotonousTimestamps()
+                }).assignTimestampsAndWatermarks(WatermarkStrategy.<OrderDetail>forMonotonousTimestamps()
                         .withTimestampAssigner(new SerializableTimestampAssigner<OrderDetail>() {
                             @Override
-                            public long extractTimestamp(OrderDetail orderDetail, long l) {
-                                return orderDetail.getCreate_ts();
+                            public long extractTimestamp(OrderDetail element, long recordTimestamp) {
+                                return element.getCreate_ts();
                             }
                         }));
 
-        //打印流
-//        orderInfoDS.print("orderInfoDS>>>>>>>>>>>>>>>>>>>>>>>>>>");
-//        orderDetailDS.print("orderDetailDS>>>>>>>>>>>>>>>>>>>>>");
-
-        // 3.双流join
-        SingleOutputStreamOperator<OrderWide> orderWideWithNoDimDS = orderInfoDS.keyBy(OrderInfo::getId).intervalJoin(orderDetailDS.keyBy(OrderDetail::getOrder_id))
-                .between(Time.seconds(-5), Time.seconds(5))
+        //TODO 3.双流JOIN
+        SingleOutputStreamOperator<OrderWide> orderWideWithNoDimDS = orderInfoDS.keyBy(OrderInfo::getId)
+                .intervalJoin(orderDetailDS.keyBy(OrderDetail::getOrder_id))
+                .between(Time.seconds(-5), Time.seconds(5)) //生成环境中给的时间给最大延迟时间
                 .process(new ProcessJoinFunction<OrderInfo, OrderDetail, OrderWide>() {
-
                     @Override
-                    public void processElement(OrderInfo orderInfo, OrderDetail orderDetail, Context context, Collector<OrderWide> collector) throws Exception {
-                        collector.collect(new OrderWide(orderInfo, orderDetail));
+                    public void processElement(OrderInfo orderInfo, OrderDetail orderDetail, Context ctx, Collector<OrderWide> out) throws Exception {
+                        out.collect( new OrderWide(orderInfo, orderDetail));
                     }
                 });
-//        joinDS.print();
+
+        //打印测试
+          orderWideWithNoDimDS.print("orderWideWithNoDimDS>>>>>>>>>");
+
 
         // 4.关联维度信息   异步I/O 的形式提高效率
 
@@ -212,8 +204,7 @@ public class OrderWideApp {
 
 
         // 5.将宽表数据写入Kafka中
-        orderWideWithCategory3DS.map(JSON::toJSONString)
-                .addSink(MyKafkaUtil.getKafkaSink(orderWideSinkTopic));
+        orderWideWithCategory3DS.map(line -> JSON.toJSONString(line)).addSink(MyKafkaUtil.getKafkaSink(orderWideSinkTopic));
 
         // 6.执行程序
         env.execute("OrderWideApp");

@@ -42,7 +42,7 @@ public class BaseLogApp {
 
         //TODO 4.消费Kafka数据
         String topic = "ods_base_log";
-        String groupId = "ods_base_log_gmall2022";
+        String groupId = "ods_base_log_gmall_031611";
         DataStreamSource<String> kafkaSource = env.addSource(MyKafkaUtil.getKafkaSource(topic, groupId));
 
         //TODO 5.将数据转换成JSON对象

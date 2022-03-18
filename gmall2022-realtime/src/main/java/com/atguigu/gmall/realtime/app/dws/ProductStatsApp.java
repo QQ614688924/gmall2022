@@ -336,7 +336,7 @@ public class ProductStatsApp {
         productStatsWithTmDS.print("productStatsWithTmDS>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
         //8.打印并写入clickhouse
-        productStatsWithTmDS.addSink(MyClickHouseUtil.getSink("insert into table product_stats_2022 values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
+        productStatsWithTmDS.addSink(MyClickHouseUtil.getSink("insert into  product_stats_2022 values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
 
         //9.执行程序
         env.execute();

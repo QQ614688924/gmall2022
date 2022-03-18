@@ -88,7 +88,7 @@ public class OrderWideApp {
                 });
 
         //打印测试
-          orderWideWithNoDimDS.print("orderWideWithNoDimDS>>>>>>>>>");
+//          orderWideWithNoDimDS.print("orderWideWithNoDimDS>>>>>>>>>");
 
 
         // 4.关联维度信息   异步I/O 的形式提高效率

@@ -35,4 +35,21 @@ public class MyKafkaUtil {
         return new FlinkKafkaConsumer<String>(topic,new SimpleStringSchema(),properties);
     }
 
+    public static String getKafkaDDL(String topic,String group_id){
+
+        return "with (" +
+                "'connector' = 'kafka',  " +
+                "'topic' = '"+ topic  +"', " +
+                "'properties.bootstrap.servers' = '"+ KAFKA_SERVER +"',  " +
+                "'properties.group.id' = '"+ group_id +"',  " +
+                "'format' = 'json',  " +
+                "'scan.startup.mode' = 'latest-offset'  " +
+                ")";
+
+    }
+
+    public static void main(String[] args) {
+        System.out.println(getKafkaDDL("aaa", "bbb"));
+    }
+
 }

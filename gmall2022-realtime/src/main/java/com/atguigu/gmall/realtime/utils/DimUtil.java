@@ -33,7 +33,7 @@ public class DimUtil {
             jedis.expire(key, 24 * 60 * 60);
 
             JSONObject data = JSON.parseObject(jsonStr);
-            System.out.println("走缓存>>>>>>" +data);
+//            System.out.println("走缓存>>>>>>" +data);
 
             jedis.close();
 
@@ -47,7 +47,7 @@ public class DimUtil {
         List<JSONObject> queryList = PhoenixUtil.queryList(connection, querySql, JSONObject.class, true);
 
         JSONObject result = queryList.get(0);
-        System.out.println("没走缓存>>>>>>>>>>>>>"+ result);
+//        System.out.println("没走缓存>>>>>>>>>>>>>"+ result);
 
         //返回结果前，  将数据缓存至redis
         jedis.set(key, result.toJSONString());
